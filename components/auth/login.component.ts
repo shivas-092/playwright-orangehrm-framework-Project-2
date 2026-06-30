@@ -1,5 +1,5 @@
 import { Page, expect } from '@playwright/test';
-import { env } from '../config/env';
+import { env } from '../../config/env';
 export class LoginComponent {
 
     constructor(private readonly page: Page) {}
