@@ -8,6 +8,12 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    
+    env:
+      BASE_URL: ${{ secrets.BASE_URL }}
+      ORANGE_USERNAME: ${{ secrets.ORANGE_USERNAME }}
+      ORANGE_PASSWORD: ${{ secrets.ORANGE_PASSWORD }}
+
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -25,8 +31,3 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
-
-    env:
-      BASE_URL: ${{ secrets.BASE_URL }}
-      ORANGE_USERNAME: ${{ secrets.ORANGE_USERNAME }}
-      ORANGE_PASSWORD: ${{ secrets.ORANGE_PASSWORD }}
