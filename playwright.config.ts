@@ -127,9 +127,9 @@ export default defineConfig({
       testMatch: /auth\.setup\.ts/,
     },
     {
-      name: 'chromium',
+      name: 'firefox',
       use: {
-        ...devices['Desktop Chrome'],
+        ...devices['Desktop Firefox'],
         storageState: 'storage/admin.json',
       },
       dependencies: ['setup'],
