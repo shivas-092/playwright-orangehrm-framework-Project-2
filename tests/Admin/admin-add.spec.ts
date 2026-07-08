@@ -1,5 +1,3 @@
-// tests/Admin/admin-add.spec.ts
-
 import { test } from '@playwright/test';
 import { SidebarComponent } from '../../components/dashboard/sidebar.component';
 import { PIMComponent } from '../../components/pim/pim.component';
@@ -14,17 +12,15 @@ test.describe('Admin Module - Add User', () => {
     const pimComponent = new PIMComponent(page);
     const adminComponent = new AdminComponent(page);
 
-    //await page.goto('/web/index.php/dashboard/index');
-
     const employee = EmployeeData.createEmployee();
 
     await sidebar.navigateToPIM();
     await pimComponent.clickAddEmployee();
 
-    const createdEmployee = await pimComponent.addEmployee(
-      employee.firstName,
-      employee.lastName
-    );
+    const createdEmployee = await pimComponent.addEmployee({
+      firstName: employee.firstName,
+      lastName: employee.lastName,
+    });
 
     const employeeFullName = `${createdEmployee.firstName} ${createdEmployee.lastName}`;
     const adminUser = AdminData.createAdminUser(employeeFullName);
