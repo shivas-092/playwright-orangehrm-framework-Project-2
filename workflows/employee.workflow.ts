@@ -1,0 +1,43 @@
+import { Page, expect } from '@playwright/test';
+import { SidebarComponent } from '../components/dashboard/sidebar.component';
+import { PIMComponent } from '../components/pim/pim.component';
+import { LeaveComponent } from '../components/leave/leave.component';
+import { EmployeeUtil } from '../utils/employee.util';
+
+export class EmployeeWorkflow {
+  constructor(private readonly page: Page) {}
+
+  async createEmployeeWithLeaveEntitlement() {
+    const sidebar = new SidebarComponent(this.page);
+    const pim = new PIMComponent(this.page);
+    const leave = new LeaveComponent(this.page);
+
+    const employeeData = EmployeeUtil.generateEmployee();
+
+    await this.page.goto('/web/index.php/dashboard/index', {
+      waitUntil: 'domcontentloaded',
+    });
+
+    await expect(
+      this.page.getByRole('heading', { name: 'Dashboard' })
+    ).toBeVisible();
+
+    await sidebar.navigateToPIM();
+    await pim.clickAddEmployee();
+
+    const employee = await pim.addEmployee({
+      ...employeeData,
+      createLogin: true,
+    });
+
+    const employeeName = `${employee.firstName} ${employee.lastName}`;
+
+    await pim.searchEmployee(employee.employeeId);
+    await pim.verifyEmployeeExists(employee.employeeId);
+
+    await leave.navigateToAddEntitlement();
+    await leave.addLeaveEntitlement(employeeName);
+
+    return employee;
+  }
+}

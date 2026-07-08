@@ -36,4 +36,13 @@ export class SidebarComponent {
       this.page.getByRole('heading', { name: 'System Users' })
     ).toBeVisible();
   }
+  async navigateToLeave() {
+  await this.page.goto('/web/index.php/leave/viewLeaveList', {
+    waitUntil: 'domcontentloaded',
+  });
+
+  await expect(
+    this.page.getByRole('heading', { name: 'Leave' })
+  ).toBeVisible();
+}
 }

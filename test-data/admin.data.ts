@@ -1,4 +1,4 @@
-// test-data/admin.data.ts
+
 import { faker } from '@faker-js/faker';
 
 export interface AdminUserData {
