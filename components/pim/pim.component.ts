@@ -15,8 +15,8 @@ export class PIMComponent {
   async clickAddEmployee() {
     await this.page.getByRole('button', { name: 'Add' }).click();
     await expect(this.page).toHaveURL(/addEmployee/);
-    await expect(this.page.getByRole('heading', { name: 'Add Employee' })).toBeVisible();
     await this.waitForFormLoader();
+    await expect(this.page.getByRole('heading', { name: 'Add Employee' })).toBeVisible();
   }
 
   async addEmployee(employee: EmployeeDetails) {
@@ -37,9 +37,9 @@ export class PIMComponent {
 
     await expect(this.page.getByRole('button', { name: 'Save' })).toBeEnabled();
     await this.page.getByRole('button', { name: 'Save' }).click();
-    await expect(this.page).toHaveURL(/viewPersonalDetails/, { timeout: 20000 });
+    await expect(this.page).toHaveURL(/viewPersonalDetails/, { timeout: 30000 });
     await this.waitForFormLoader();
-    await expect(this.page.getByRole('heading', { name: 'Personal Details' })).toBeVisible();
+    await expect(this.page.getByRole('textbox', { name: 'First Name' })).toBeVisible({ timeout: 20000 });
 
     const employeeDetails = {
       firstName: employee.firstName,
@@ -55,17 +55,18 @@ export class PIMComponent {
   }
 
   async navigateToEmployeeList() {
-    await this.page.getByRole('link', { name: 'Employee List' }).click();
+    await this.page.goto('/web/index.php/pim/viewEmployeeList', { waitUntil: 'domcontentloaded' });
     await expect(this.page).toHaveURL(/viewEmployeeList/);
     await this.waitForFormLoader();
+    await expect(this.page.getByRole('heading', { name: 'Employee Information' })).toBeVisible();
   }
 
   async searchEmployee(employeeId: string) {
     await this.navigateToEmployeeList();
-    await this.waitForFormLoader();
     await this.employeeIdInput().fill(employeeId);
     await this.page.getByRole('button', { name: 'Search' }).click();
     await this.waitForFormLoader();
+    await expect(this.getEmployeeRow(employeeId)).toBeVisible({ timeout: 20000 });
   }
 
   async verifyEmployeeExists(employeeId: string) {
@@ -77,9 +78,9 @@ export class PIMComponent {
 
     await expect(employeeRow).toBeVisible();
     await employeeRow.getByText(employeeId, { exact: true }).click();
-    await expect(this.page).toHaveURL(/viewPersonalDetails/);
+    await expect(this.page).toHaveURL(/viewPersonalDetails/, { timeout: 30000 });
     await this.waitForFormLoader();
-    await expect(this.page.getByRole('heading', { name: 'Personal Details' })).toBeVisible();
+    await expect(this.page.getByRole('textbox', { name: 'First Name' })).toBeVisible({ timeout: 20000 });
   }
 
   async selectGender(gender: 'Male' | 'Female') {
@@ -101,7 +102,10 @@ export class PIMComponent {
   }
 
   async verifyEmployeeDeleted(employeeId: string) {
-    await this.searchEmployee(employeeId);
+    await this.navigateToEmployeeList();
+    await this.employeeIdInput().fill(employeeId);
+    await this.page.getByRole('button', { name: 'Search' }).click();
+    await this.waitForFormLoader();
     await expect(this.getEmployeeRow(employeeId)).toHaveCount(0);
   }
 

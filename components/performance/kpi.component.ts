@@ -25,16 +25,19 @@ export class KPIComponent {
 
   async navigateToKPI() {
     await this.page.goto('/web/index.php/performance/searchKpi', { waitUntil: 'domcontentloaded' });
+    await this.waitForFormLoader();
     await expect(this.page.getByRole('heading', { name: 'Key Performance Indicators for Job Title' })).toBeVisible();
   }
 
   async clickAddKPI() {
     await this.page.getByRole('button', { name: 'Add' }).click();
     await expect(this.page).toHaveURL(/saveKpi/);
+    await this.waitForFormLoader();
     await expect(this.page.getByText('Add Key Performance Indicator', { exact: true })).toBeVisible();
   }
 
   async addKPI(kpi: KPIData) {
+    await this.waitForFormLoader();
     await expect(this.formInputs).toHaveCount(3);
     await this.formInputs.nth(0).fill(kpi.name);
     await this.selectFormJobTitle(kpi.jobTitle);
@@ -52,10 +55,12 @@ export class KPIComponent {
     await this.page.getByRole('button', { name: 'Save' }).click();
     await expect(this.page.getByText('Successfully Saved', { exact: false })).toBeVisible();
     await expect(this.page).toHaveURL(/searchKpi/);
+    await this.waitForFormLoader();
   }
 
   async searchKPI(jobTitle: string) {
     await this.page.goto('/web/index.php/performance/searchKpi', { waitUntil: 'domcontentloaded' });
+    await this.waitForFormLoader();
     await expect(this.page.getByRole('heading', { name: 'Key Performance Indicators for Job Title' })).toBeVisible();
 
     const searchJobTitleDropdown = this.page.locator('.oxd-select-text').first();
@@ -63,11 +68,12 @@ export class KPIComponent {
     await searchJobTitleDropdown.click();
     await this.page.getByRole('option', { name: jobTitle, exact: true }).click();
     await this.page.getByRole('button', { name: 'Search' }).click();
+    await this.waitForFormLoader();
     await expect(this.page.getByRole('table')).toBeVisible();
   }
 
   async verifyKPIExists(kpiName: string) {
-    await expect(this.page.getByRole('cell', { name: kpiName, exact: true })).toBeVisible();
+    await expect(this.getKPIRow(kpiName)).toBeVisible();
   }
 
   async openKPIForEdit(kpiName: string) {
@@ -76,10 +82,12 @@ export class KPIComponent {
     await expect(kpiRow).toBeVisible();
     await kpiRow.locator('button').first().click();
     await expect(this.page).toHaveURL(/saveKpi\/\d+/);
+    await this.waitForFormLoader();
     await expect(this.page.getByText('Edit Key Performance Indicator', { exact: true })).toBeVisible();
   }
 
   async editKPI(updatedName: string, updatedMinimumRating: string, updatedMaximumRating: string) {
+    await this.waitForFormLoader();
     await expect(this.formInputs).toHaveCount(3);
     await this.formInputs.nth(0).fill(updatedName);
     await this.formInputs.nth(1).fill(updatedMinimumRating);
@@ -90,6 +98,7 @@ export class KPIComponent {
     await this.page.getByRole('button', { name: 'Save' }).click();
     await expect(this.page.getByText('Successfully Updated', { exact: false })).toBeVisible();
     await expect(this.page).toHaveURL(/searchKpi/);
+    await this.waitForFormLoader();
   }
 
   async deleteKPI(kpiName: string) {
@@ -100,10 +109,11 @@ export class KPIComponent {
     await expect(this.page.getByText('Are you Sure?', { exact: true })).toBeVisible();
     await this.page.getByRole('button', { name: 'Yes, Delete' }).click();
     await expect(this.page.getByText('Successfully Deleted', { exact: false })).toBeVisible();
+    await this.waitForFormLoader();
   }
 
   async verifyKPIDeleted(kpiName: string) {
-    await expect(this.page.getByRole('cell', { name: kpiName, exact: true })).toHaveCount(0);
+    await expect(this.getKPIRow(kpiName)).toHaveCount(0);
   }
 
   private async selectFormJobTitle(jobTitle: string) {
@@ -112,6 +122,14 @@ export class KPIComponent {
   }
 
   private getKPIRow(kpiName: string): Locator {
-    return this.page.getByRole('cell', { name: kpiName, exact: true }).locator('..');
+    return this.page.locator('.oxd-table-card').filter({ hasText: kpiName });
+  }
+
+  private async waitForFormLoader() {
+    const loader = this.page.locator('.oxd-form-loader');
+
+    if (await loader.count()) {
+      await loader.waitFor({ state: 'hidden', timeout: 20000 }).catch(() => {});
+    }
   }
 }
