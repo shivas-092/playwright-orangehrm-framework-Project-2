@@ -30,14 +30,14 @@ export class LeaveComponent {
     await expect(this.page).toHaveURL(/applyLeave/);
     await this.waitForFormLoader();
     await expect(this.page.getByRole('heading', { name: 'Apply Leave' })).toBeVisible();
-    await expect(this.page.getByPlaceholder('dd-mm-yyyy').first()).toBeVisible();
+    await expect(this.dateInputs().first()).toBeVisible({ timeout: 20000 });
   }
 
   async applyOneDayLeave(comment: string) {
     await this.waitForFormLoader();
     await this.selectDropdownOptionByIndex(0, 'CAN - Personal');
-    await this.enterDateByIndex(0, '14-07-2026');
-    await this.enterDateByIndex(1, '14-07-2026');
+    await this.enterDateByIndex(0);
+    await this.enterDateByIndex(1);
     await this.page.keyboard.press('Escape');
     await this.commentsTextarea().fill(comment);
 
@@ -80,10 +80,14 @@ export class LeaveComponent {
     await expect(this.page.locator('.oxd-table-body')).toContainText('Cancelled');
   }
 
-  private async enterDateByIndex(index: number, date: string) {
-    const dateInput = this.page.getByPlaceholder('dd-mm-yyyy').nth(index);
+  private async enterDateByIndex(index: number) {
+    const dateInput = this.dateInputs().nth(index);
 
-    await expect(dateInput).toBeVisible();
+    await expect(dateInput).toBeVisible({ timeout: 20000 });
+
+    const placeholder = await dateInput.getAttribute('placeholder');
+    const date = placeholder === 'dd-mm-yyyy' ? '14-07-2026' : '2026-14-07';
+
     await dateInput.click();
     await dateInput.fill(date);
     await dateInput.press('Tab');
@@ -115,6 +119,10 @@ export class LeaveComponent {
     if (await loader.count()) {
       await loader.waitFor({ state: 'hidden', timeout: 20000 }).catch(() => {});
     }
+  }
+
+  private dateInputs(): Locator {
+    return this.page.locator('input[placeholder="yyyy-dd-mm"], input[placeholder="dd-mm-yyyy"]');
   }
 
   private employeeNameInput(): Locator {
