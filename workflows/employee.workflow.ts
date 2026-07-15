@@ -7,33 +7,32 @@ import { EmployeeUtil } from '../utils/employee.util';
 export class EmployeeWorkflow {
   constructor(private readonly page: Page) {}
 
-  async createEmployeeWithLeaveEntitlement() {
+  async createEmployee(createLogin: boolean = false) {
     const sidebar = new SidebarComponent(this.page);
     const pim = new PIMComponent(this.page);
-    const leave = new LeaveComponent(this.page);
-
     const employeeData = EmployeeUtil.generateEmployee();
 
-    await this.page.goto('/web/index.php/dashboard/index', {
-      waitUntil: 'domcontentloaded',
-    });
-
-    await expect(
-      this.page.getByRole('heading', { name: 'Dashboard' })
-    ).toBeVisible();
+    await this.page.goto('/web/index.php/dashboard/index', { waitUntil: 'domcontentloaded' });
+    await expect(this.page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 
     await sidebar.navigateToPIM();
     await pim.clickAddEmployee();
 
     const employee = await pim.addEmployee({
       ...employeeData,
-      createLogin: true,
+      createLogin,
     });
-
-    const employeeName = `${employee.firstName} ${employee.lastName}`;
 
     await pim.searchEmployee(employee.employeeId);
     await pim.verifyEmployeeExists(employee.employeeId);
+
+    return employee;
+  }
+
+  async createEmployeeWithLeaveEntitlement() {
+    const leave = new LeaveComponent(this.page);
+    const employee = await this.createEmployee(true);
+    const employeeName = `${employee.firstName} ${employee.lastName}`;
 
     await leave.navigateToAddEntitlement();
     await leave.addLeaveEntitlement(employeeName);

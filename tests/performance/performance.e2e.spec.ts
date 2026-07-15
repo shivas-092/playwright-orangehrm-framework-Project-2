@@ -2,11 +2,14 @@ import { test } from '@playwright/test';
 import { SidebarComponent } from '../../components/dashboard/sidebar.component';
 import { KPIComponent } from '../../components/performance/kpi.component';
 import { TrackerComponent } from '../../components/performance/tracker.component';
+import { EmployeeWorkflow } from '../../workflows/employee.workflow';
 import { PerformanceData } from '../../test-data/performance.data';
 import { TrackerData } from '../../test-data/tracker.data';
 
 test.describe('Performance Module', () => {
   test('Admin can create, search, edit and delete a KPI', async ({ page }) => {
+    test.setTimeout(120000);
+
     const sidebar = new SidebarComponent(page);
     const kpiComponent = new KPIComponent(page);
     const kpi = PerformanceData.createKPI();
@@ -25,8 +28,17 @@ test.describe('Performance Module', () => {
   });
 
   test('Admin can create and search a performance tracker', async ({ page }) => {
+    test.setTimeout(180000);
+
+    const employeeWorkflow = new EmployeeWorkflow(page);
     const trackerComponent = new TrackerComponent(page);
-    const tracker = TrackerData.createTracker();
+
+    const employee = await employeeWorkflow.createEmployee();
+    const reviewer = await employeeWorkflow.createEmployee();
+
+    const employeeName = `${employee.firstName} ${employee.lastName}`;
+    const reviewerName = `${reviewer.firstName} ${reviewer.lastName}`;
+    const tracker = TrackerData.createTracker(employeeName, reviewerName);
 
     await trackerComponent.navigateToTrackers();
     await trackerComponent.clickAddTracker();

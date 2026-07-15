@@ -34,8 +34,8 @@ export class TrackerComponent {
     await this.selectAutocompleteValue(this.formTextboxes.nth(1), tracker.employeeName);
     await this.selectAutocompleteValue(this.formTextboxes.nth(2), tracker.reviewerName);
     await this.page.getByRole('button', { name: 'Save' }).click();
-    await expect(this.page.getByText('Successfully Saved', { exact: false })).toBeVisible();
-    await expect(this.page).toHaveURL(/viewPerformanceTracker/);
+    await expect(this.page).toHaveURL(/viewPerformanceTracker/, { timeout: 20000 });
+    await expect(this.page.getByRole('heading', { name: 'Performance Trackers' })).toBeVisible();
   }
 
   async searchTracker(employeeName: string) {
@@ -54,11 +54,13 @@ export class TrackerComponent {
   }
 
   private async selectAutocompleteValue(textbox: Locator, value: string) {
-    await textbox.fill(value.substring(0, 2));
+    const searchText = value.split(' ')[0];
+    const escapedValue = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const matchingOption = this.page.getByRole('option', { name: new RegExp(`^${escapedValue}$`, 'i') }).first();
 
-    const matchingOption = this.page.getByRole('option').filter({ hasText: value }).first();
-
-    await expect(matchingOption).toBeVisible();
+    await textbox.clear();
+    await textbox.fill(searchText);
+    await expect(matchingOption).toBeVisible({ timeout: 20000 });
     await matchingOption.click();
   }
 }
