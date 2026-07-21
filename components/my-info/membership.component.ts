@@ -15,13 +15,7 @@ export class MembershipComponent {
     await FormUtil.waitForLoader(this.page);
 
     await expect(this.page).toHaveURL(/\/pim\/viewMemberships\/empNumber\/\d+/);
-
-    await expect(
-      this.page.getByRole('heading', {
-        name: 'Assigned Memberships',
-        exact: true
-      })
-    ).toBeVisible();
+    await expect(this.page.getByRole('heading', { name: 'Assigned Memberships', exact: true })).toBeVisible();
 
     await this.clickAddMembership();
 
@@ -44,10 +38,7 @@ export class MembershipComponent {
     await expect(subscriptionAmountInput).toHaveValue(data.subscriptionAmount);
     await expect(currencyDropdown).toContainText(data.currency);
 
-    const saveButton = membershipForm.getByRole('button', {
-      name: 'Save',
-      exact: true
-    });
+    const saveButton = membershipForm.getByRole('button', { name: 'Save', exact: true });
 
     await expect(saveButton).toBeVisible();
     await expect(saveButton).toBeEnabled();
@@ -57,22 +48,14 @@ export class MembershipComponent {
 
     await FormUtil.waitForLoader(this.page);
 
-    await expect(
-      this.page.getByRole('heading', {
-        name: 'Add Membership',
-        exact: true
-      })
-    ).toBeHidden({ timeout: 15000 });
+    await expect(this.page.getByRole('heading', { name: 'Add Membership', exact: true })).toBeHidden({ timeout: 15000 });
 
     await this.verifyMembershipInTable(data.membership, data.subscriptionPaidBy);
   }
 
   private async clickAddMembership() {
     const addButton = this.page
-      .getByRole('heading', {
-        name: 'Assigned Memberships',
-        exact: true
-      })
+      .getByRole('heading', { name: 'Assigned Memberships', exact: true })
       .locator('xpath=following::button[1]');
 
     await expect(addButton).toBeVisible();
@@ -80,18 +63,13 @@ export class MembershipComponent {
 
     await addButton.click();
 
-    await expect(
-      this.page.getByRole('heading', {
-        name: 'Add Membership',
-        exact: true
-      })
-    ).toBeVisible();
+    await expect(this.page.getByRole('heading', { name: 'Add Membership', exact: true })).toBeVisible();
   }
 
   private async verifyMembershipInTable(membership: string, subscriptionPaidBy: string) {
     const membershipRow = this.page.locator('.oxd-table-card').filter({
       hasText: membership
-    });
+    }).last();
 
     await expect(membershipRow).toBeVisible({ timeout: 15000 });
     await expect(membershipRow).toContainText(membership);
