@@ -69,29 +69,28 @@ export class AssignClaimComponent extends ClaimComponent {
     await expect(this.getExpenseDialog()).toBeVisible();
   }
 
-  async addExpense(expenseType: string, expenseDate: string, amount: string, note: string) {
-    const expenseDialog = this.getExpenseDialog();
-    const expenseTypeDropdown = expenseDialog.locator('.oxd-select-text');
-    const expenseDateInput = expenseDialog.getByPlaceholder('yyyy-dd-mm');
-    const amountInput = expenseDialog.locator('input.oxd-input').last();
-    const noteInput = expenseDialog.locator('textarea');
+ async addExpense(expenseType: string, expenseDate: string, amount: string, note: string) {
+  const expenseDialog = this.getExpenseDialog();
+  const expenseTypeDropdown = expenseDialog.locator('.oxd-select-text');
+  const expenseDateInput = expenseDialog.locator('.oxd-input-group').filter({ hasText: 'Date' }).locator('input');
+  const amountInput = expenseDialog.locator('.oxd-input-group').filter({ hasText: 'Amount' }).locator('input');
+  const noteInput = expenseDialog.locator('.oxd-input-group').filter({ hasText: 'Note' }).locator('textarea');
 
-    await expect(expenseDialog).toBeVisible();
+  await expect(expenseDialog).toBeVisible();
+  await this.selectDropdown(expenseTypeDropdown, expenseType);
+  await this.fillField(expenseDateInput, expenseDate);
+  await this.fillField(amountInput, amount);
+  await this.fillField(noteInput, note);
 
-    await this.selectDropdown(expenseTypeDropdown, expenseType);
-    await this.fillField(expenseDateInput, expenseDate);
-    await this.fillField(amountInput, amount);
-    await this.fillField(noteInput, note);
+  await expect(expenseDateInput).toHaveValue(expenseDate);
+  await expect(amountInput).toHaveValue(amount);
+  await expect(noteInput).toHaveValue(note);
 
-    await expect(expenseDateInput).toHaveValue(expenseDate);
-    await expect(amountInput).toHaveValue(amount);
-    await expect(noteInput).toHaveValue(note);
-
-    await expenseDialog.getByRole('button', { name: 'Save' }).click();
-    await this.verifySuccessToast();
-    await this.waitForLoader();
-    await expect(expenseDialog).toBeHidden();
-  }
+  await expenseDialog.getByRole('button', { name: 'Save' }).click();
+  await this.verifySuccessToast();
+  await this.waitForLoader();
+  await expect(expenseDialog).toBeHidden();
+}
 
   async verifyExpenseInTable(expenseType: string, amount: string) {
     const expenseRow = this.page.locator('.oxd-table-card').filter({ hasText: expenseType }).first();
